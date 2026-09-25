@@ -5,175 +5,255 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>3しょくしょくひんぐん ぶんるいゲーム</title>
   <style>
+    :root {
+      --red-color: #ef4444;
+      --red-bg: #fef2f2;
+      --red-border: #fca5a5;
+      --yellow-color: #eab308;
+      --yellow-bg: #fefce8;
+      --yellow-border: #fde047;
+      --green-color: #22c55e;
+      --green-bg: #f0fdf4;
+      --green-border: #86efac;
+    }
+
     * {
       box-sizing: border-box;
-      touch-action: manipulation;
-    }
-    body {
-      font-family: "Hiragino Sans", "ヒラギノ角ゴ ProN", "Meiryo", sans-serif;
-      background-color: #f0fdf4;
-      margin: 0;
-      padding: 10px;
-      text-align: center;
       user-select: none;
       -webkit-user-select: none;
+      touch-action: manipulation;
     }
+
+    body {
+      font-family: "Hiragino Sans", "ヒラギノ角ゴ ProN", "Meiryo", sans-serif;
+      background-color: #f0f9ff;
+      margin: 0;
+      padding: 10px;
+      color: #1e293b;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 画面コンテナ */
     .screen {
       display: none;
-      max-width: 800px;
+      height: 100%;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 900px;
       margin: 0 auto;
+      width: 100%;
     }
-    .active {
-      display: block;
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* --- スタート画面 --- */
+    .title-box {
+      margin-top: 20px;
+      text-align: center;
     }
     h1 {
-      color: #166534;
-      font-size: 26px;
-      margin: 10px 0;
+      font-size: 32px;
+      color: #0284c7;
+      margin: 0 0 10px 0;
+      text-shadow: 2px 2px 0 white;
     }
-    p {
-      color: #374151;
-      font-size: 16px;
+    .subtitle {
+      font-size: 18px;
+      color: #64748b;
+      margin: 0;
     }
-    /* スタート画面 */
-    .start-card {
+
+    .menu-card {
       background: white;
-      padding: 30px 20px;
-      border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      margin-top: 20px;
+      padding: 25px;
+      border-radius: 24px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
     }
+
     .btn {
-      background-color: #22c55e;
+      background-color: #0284c7;
       color: white;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: bold;
-      padding: 15px 30px;
+      padding: 16px 32px;
       border: none;
       border-radius: 50px;
       cursor: pointer;
-      margin: 10px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      transition: transform 0.1s, background-color 0.2s;
+      width: 100%;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+      transition: all 0.1s;
     }
     .btn:active {
-      transform: scale(0.95);
+      transform: scale(0.97);
     }
-    .btn-secondary {
-      background-color: #0284c7;
+    .btn-green {
+      background-color: #22c55e;
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
     }
-    /* ランキング表示 */
-    .ranking-box {
-      margin-top: 20px;
+
+    /* Ranking Box */
+    .ranking-card {
       background: #f8fafc;
-      border-radius: 12px;
-      padding: 15px;
       border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 12px;
+      margin-top: 15px;
+    }
+    .ranking-card h3 {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+      color: #475569;
     }
     .ranking-list {
       list-style: none;
       padding: 0;
-      margin: 10px 0 0 0;
-      text-align: left;
+      margin: 0;
     }
     .ranking-item {
       display: flex;
       justify-content: space-between;
-      padding: 8px 12px;
+      padding: 6px 10px;
+      font-size: 15px;
       border-bottom: 1px dashed #cbd5e1;
-      font-weight: bold;
     }
-    /* ゲーム画面 */
-    .header-info {
+    .ranking-item:last-child {
+      border-bottom: none;
+    }
+
+    /* --- ゲーム画面 --- */
+    .game-header {
+      width: 100%;
       display: flex;
-      justify-content: space-around;
+      justify-content: space-between;
+      align-items: center;
       background: white;
-      padding: 10px;
-      border-radius: 12px;
+      padding: 10px 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .badge {
       font-size: 20px;
       font-weight: bold;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
-    #food-container {
-      min-height: 120px;
+    .badge span {
+      font-size: 26px;
+      color: #0284c7;
+    }
+
+    /* カード出現エリア */
+    .stage-area {
+      flex: 1;
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-bottom: 20px;
+      width: 100%;
+      position: relative;
     }
+
     .food-card {
-      font-size: 50px;
-      padding: 10px 20px;
+      width: 160px;
+      height: 160px;
       background: white;
-      border: 3px solid #64748b;
-      border-radius: 16px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-      cursor: grab;
-      touch-action: none;
+      border: 4px solid #cbd5e1;
+      border-radius: 24px;
+      box-shadow: 0 12px 20px rgba(0,0,0,0.12);
       display: flex;
       flex-direction: column;
+      justify-content: center;
       align-items: center;
-      width: 140px;
+      cursor: grab;
+      touch-action: none;
+      position: absolute;
+      z-index: 10;
+      transition: transform 0.05s linear;
+    }
+    .food-emoji {
+      font-size: 70px;
+      line-height: 1;
     }
     .food-name {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: bold;
-      margin-top: 5px;
-      color: #1e293b;
+      margin-top: 8px;
     }
+
+    /* 3色グループのカゴ */
     .drop-zones {
       display: flex;
-      gap: 10px;
-      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      height: 220px;
+      margin-bottom: 10px;
     }
     .zone {
       flex: 1;
-      min-height: 180px;
-      border-radius: 16px;
+      border-radius: 20px;
       border: 4px dashed;
-      padding: 10px 5px;
+      padding: 12px 8px;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: flex-start;
       background: white;
+      position: relative;
     }
     .zone-title {
-      font-size: 20px;
+      font-size: 24px;
       font-weight: bold;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
     .zone-desc {
-      font-size: 12px;
+      font-size: 13px;
+      text-align: center;
       line-height: 1.3;
+      font-weight: bold;
     }
-    #red-zone { border-color: #ef4444; color: #991b1b; background-color: #fef2f2; }
-    #yellow-zone { border-color: #eab308; color: #854d0e; background-color: #fefce8; }
-    #green-zone { border-color: #22c55e; color: #166534; background-color: #f0fdf4; }
-    /* モーダル（結果発表） */
+
+    #red-zone { border-color: var(--red-color); background: var(--red-bg); color: #991b1b; }
+    #yellow-zone { border-color: var(--yellow-color); background: var(--yellow-bg); color: #854d0e; }
+    #green-zone { border-color: var(--green-color); background: var(--green-bg); color: #166534; }
+
+    .zone.hovered {
+      transform: scale(1.03);
+      filter: brightness(0.95);
+    }
+
+    /* モーダル */
     .modal {
       display: none;
       position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.6);
       justify-content: center;
       align-items: center;
+      z-index: 100;
     }
     .modal-content {
       background: white;
-      padding: 25px;
-      border-radius: 20px;
-      width: 85%;
+      padding: 30px;
+      border-radius: 28px;
+      width: 90%;
       max-width: 400px;
       text-align: center;
+      box-shadow: 0 20px 30px rgba(0,0,0,0.2);
     }
     input[type="text"] {
-      font-size: 18px;
-      padding: 8px;
+      font-size: 20px;
+      padding: 10px;
       width: 80%;
       border: 2px solid #cbd5e1;
-      border-radius: 8px;
-      margin: 10px 0;
+      border-radius: 12px;
+      margin: 15px 0;
       text-align: center;
     }
   </style>
@@ -182,30 +262,33 @@
 
   <!-- スタート画面 -->
   <div id="start-screen" class="screen active">
-    <h1>3しょくしょくひんぐん<br>ぶんるいゲーム</h1>
-    <div class="start-card">
-      <p>たべものを 正しいグループに 分けよう！</p>
-      <button class="btn" onclick="startGame('challenge')">⏱️ 30びょう チャレンジ</button><br>
-      <button class="btn btn-secondary" onclick="startGame('practice')">🔰 れんしゅう モード</button>
+    <div class="title-box">
+      <h1>3しょくしょくひんぐん<br>ぶんるいゲーム</h1>
+      <p class="subtitle">たべものを たたしいグループに わけよう！</p>
+    </div>
 
-      <div class="ranking-box">
+    <div class="menu-card">
+      <button class="btn btn-green" onclick="startGame('challenge')">⏱️ 30びょう チャレンジ</button>
+      <button class="btn" onclick="startGame('practice')">🔰 れれんしゅう モード</button>
+
+      <div class="ranking-card">
         <h3>🏆 ハイスコア ランキング</h3>
-        <ol id="ranking-list" class="ranking-list">
-          <!-- ランキングがここに表示されます -->
-        </ol>
+        <ol id="ranking-list" class="ranking-list"></ol>
       </div>
     </div>
+
+    <div></div>
   </div>
 
   <!-- ゲーム画面 -->
   <div id="game-screen" class="screen">
-    <div class="header-info">
-      <div>てんすう: <span id="score">0</span></div>
-      <div id="timer-box">のこり: <span id="timer">30</span>びょう</div>
+    <div class="game-header">
+      <div class="badge">てんすう: <span id="score">0</span></div>
+      <div class="badge" id="timer-badge">のこり: <span id="timer">30</span>びょう</div>
     </div>
 
-    <div id="food-container">
-      <!-- ここに食材カードが出現 -->
+    <div class="stage-area" id="stage-area">
+      <!-- カードが動的に生成されます -->
     </div>
 
     <div class="drop-zones">
@@ -222,27 +305,29 @@
         <div class="zone-desc">ちょうしを整える<br>(びょうき予防)</div>
       </div>
     </div>
-    
-    <button style="margin-top:20px; background:none; border:none; color:#666; text-decoration:underline;" onclick="toStartScreen()">← やめる</button>
   </div>
 
   <!-- 結果発表モーダル -->
   <div id="result-modal" class="modal">
     <div class="modal-content">
       <h2>タイムアップ！ 👏</h2>
-      <p>あなたの スコア: <b id="final-score" style="font-size:24px; color:#22c55e;">0</b> てん</p>
-      <div id="name-input-area">
-        <p>なまえを いれてね！</p>
-        <input type="text" id="player-name" maxlength="8" placeholder="なまえ">
-        <br>
-        <button class="btn" onclick="saveScore()">きろくする</button>
+      <p style="font-size:18px;">あなたの スコア</p>
+      <div style="font-size:42px; font-weight:bold; color:#0284c7; margin-bottom:10px;">
+        <span id="final-score">0</span> <span style="font-size:20px;">てん</span>
       </div>
-      <button class="btn btn-secondary" onclick="toStartScreen()">タイトルへ</button>
+
+      <div id="input-area">
+        <p style="margin:0; font-size:14px; color:#64748b;">なまえを いれてね！</p>
+        <input type="text" id="player-name" maxlength="8" placeholder="なまえ">
+        <button class="btn btn-green" onclick="saveScore()">きろくする</button>
+      </div>
+
+      <button class="btn" style="background:#64748b; box-shadow:none; margin-top:5px;" onclick="toStartScreen()">タイトルへ</button>
     </div>
   </div>
 
   <script>
-    // 食材データ（※バナナを削除し、ぶどう🍇を追加）
+    // 食材データ（※バナナを削除し、ぶどう🍇・りんご🍎を設定）
     const foods = [
       { name: "ぶたにく", emoji: "🥩", group: "red" },
       { name: "さかな", emoji: "🐟", group: "red" },
@@ -262,10 +347,35 @@
     let score = 0;
     let timeLeft = 30;
     let timerId = null;
-    let currentMode = 'challenge';
     let currentFood = null;
+    let currentMode = 'challenge';
 
-    // 画面切り替え
+    // 音声効果（Web Audio API）
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'correct') {
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+        osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+      } else {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.2);
+      }
+    }
+
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
@@ -278,7 +388,6 @@
       showScreen('start-screen');
     }
 
-    // ゲーム開始
     function startGame(mode) {
       currentMode = mode;
       score = 0;
@@ -287,9 +396,9 @@
       document.getElementById('timer').textContent = timeLeft;
 
       if (mode === 'practice') {
-        document.getElementById('timer-box').style.display = 'none';
+        document.getElementById('timer-badge').style.display = 'none';
       } else {
-        document.getElementById('timer-box').style.display = 'block';
+        document.getElementById('timer-badge').style.display = 'block';
         startTimer();
       }
 
@@ -309,107 +418,117 @@
       }, 1000);
     }
 
-    // 次の食材をセット
     function nextFood() {
-      const container = document.getElementById('food-container');
-      container.innerHTML = '';
+      const stage = document.getElementById('stage-area');
+      stage.innerHTML = '';
 
       const randomIndex = Math.floor(Math.random() * foods.length);
       currentFood = foods[randomIndex];
 
       const card = document.createElement('div');
       card.className = 'food-card';
-      card.innerHTML = `<span>${currentFood.emoji}</span><span class="food-name">${currentFood.name}</span>`;
+      card.innerHTML = `<span class="food-emoji">${currentFood.emoji}</span><span class="food-name">${currentFood.name}</span>`;
 
-      setupTouchEvents(card);
-      container.appendChild(card);
+      setupDragAndTouch(card);
+      stage.appendChild(card);
     }
 
-    // iPad等のタッチ操作処理
-    function setupTouchEvents(card) {
+    // ドラッグ＆タッチ処理
+    function setupDragAndTouch(card) {
       let active = false;
-      let initialX, initialY, xOffset = 0, yOffset = 0;
+      let startX, startY, currentX = 0, currentY = 0;
 
-      card.addEventListener("touchstart", (e) => {
-        initialX = e.touches[0].clientX - xOffset;
-        initialY = e.touches[0].clientY - yOffset;
+      function onStart(e) {
+        const touch = e.touches ? e.touches[0] : e;
+        startX = touch.clientX - currentX;
+        startY = touch.clientY - currentY;
         active = true;
-      }, false);
+      }
 
-      card.addEventListener("touchmove", (e) => {
-        if (active) {
-          e.preventDefault();
-          const currentX = e.touches[0].clientX - initialX;
-          const currentY = e.touches[0].clientY - initialY;
-          xOffset = currentX;
-          yOffset = currentY;
-          card.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-        }
-      }, false);
-
-      card.addEventListener("touchend", (e) => {
+      function onMove(e) {
         if (!active) return;
-        active = false;
-        const touch = e.changedTouches[0];
+        e.preventDefault();
+        const touch = e.touches ? e.touches[0] : e;
+        currentX = touch.clientX - startX;
+        currentY = touch.clientY - startY;
+        card.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+
+        // ホバー処理
         const target = document.elementFromPoint(touch.clientX, touch.clientY);
         const zone = target ? target.closest('.zone') : null;
+        document.querySelectorAll('.zone').forEach(z => z.classList.remove('hovered'));
+        if (zone) zone.classList.add('hovered');
+      }
+
+      function onEnd(e) {
+        if (!active) return;
+        active = false;
+        const touch = e.changedTouches ? e.changedTouches[0] : e;
+        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+        const zone = target ? target.closest('.zone') : null;
+
+        document.querySelectorAll('.zone').forEach(z => z.classList.remove('hovered'));
 
         if (zone) {
           const selectedGroup = zone.getAttribute('data-group');
           if (selectedGroup === currentFood.group) {
+            playSound('correct');
             score += 10;
             document.getElementById('score').textContent = score;
+          } else {
+            playSound('wrong');
           }
           nextFood();
         } else {
-          card.style.transform = "translate3d(0px, 0px, 0px)";
-          xOffset = 0;
-          yOffset = 0;
+          card.style.transform = `translate3d(0px, 0px, 0px)`;
+          currentX = 0;
+          currentY = 0;
         }
-      }, false);
+      }
+
+      card.addEventListener('touchstart', onStart, false);
+      card.addEventListener('touchmove', onMove, false);
+      card.addEventListener('touchend', onEnd, false);
+      card.addEventListener('mousedown', onStart);
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onEnd);
     }
 
-    // ゲーム終了
     function endGame() {
       document.getElementById('final-score').textContent = score;
       document.getElementById('result-modal').style.display = 'flex';
-      document.getElementById('name-input-area').style.display = 'block';
     }
 
-    // ランキング機能（ブラウザ保存）
     function saveScore() {
-      const nameInput = document.getElementById('player-name');
-      const name = nameInput.value.trim() || 'ななし';
-      
+      const name = document.getElementById('player-name').value.trim() || 'ななし';
       let ranking = JSON.parse(localStorage.getItem('food_game_ranking') || '[]');
       ranking.push({ name: name, score: score });
       ranking.sort((a, b) => b.score - a.score);
-      ranking = ranking.slice(0, 5); // TOP5
+      ranking = ranking.slice(0, 5);
 
       localStorage.setItem('food_game_ranking', JSON.stringify(ranking));
-      nameInput.value = '';
+      document.getElementById('player-name').value = '';
       toStartScreen();
     }
 
     function loadRanking() {
-      const rankingList = document.getElementById('ranking-list');
-      rankingList.innerHTML = '';
+      const list = document.getElementById('ranking-list');
+      list.innerHTML = '';
       const ranking = JSON.parse(localStorage.getItem('food_game_ranking') || '[]');
 
       if (ranking.length === 0) {
-        rankingList.innerHTML = '<li style="text-align:center; color:#888;">まだ きろくが ありません</li>';
+        list.innerHTML = '<li style="text-align:center; color:#888; font-size:14px;">まだ きろくが ありません</li>';
         return;
       }
 
       ranking.forEach((item, index) => {
         const li = document.createElement('li');
         li.className = 'ranking-item';
-        li.innerHTML = `<span>${index + 1}位: ${item.name}</span><span>${item.score} てん</span>`;
-        rankingList.appendChild(li);
+        li.innerHTML = `<span><b>${index + 1}位</b> ${item.name}</span><b>${item.score}点</b>`;
+        list.appendChild(li);
       });
     }
 
-    // 初期読み込み
     loadRanking();
   </script>
 </body>
