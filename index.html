@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>たのしくまなぶ！3しょくしょくひんぐん パズル</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Canvas Confetti CDN for visual celebrations -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Google Fonts: Modern Rounded Font for Kids -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      touch-action: manipulation;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 50%, #fef3c7 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Bouncing and pulsing animations for interactive kid-friendly feel */
+    @keyframes pulse-gentle {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .animate-pulse-gentle {
+      animation: pulse-gentle 2s infinite ease-in-out;
+    }
+
+    @keyframes pop-in {
+      0% { transform: scale(0.5); opacity: 0; }
+      70% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+    .animate-pop {
+      animation: pop-in 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .animate-shake {
+      animation: shake 0.4s ease-in-out;
+    }
+
+    /* Custom scrollbars for meal list */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+    }
+
+    /* Dragging ghost styling */
+    .dragging {
+      opacity: 0.4;
+      transform: scale(0.95);
+    }
+
+    /* Touch drag ghost floating image */
+    #touch-ghost {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%) scale(1.1);
+      transition: transform 0.05s ease;
+      filter: drop-shadow(0 15px 15px rgba(0,0,0,0.25));
+      display: none;
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen text-slate-800 antialiased selection:bg-none">
+
+  <!-- Touch Drag Ghost Element -->
+  <div id="touch-ghost" class="bg-white rounded-2xl p-4 border-4 border-indigo-400 text-center shadow-2xl flex flex-col items-center justify-center">
+    <span id="ghost-emoji" class="text-5xl mb-1">🍎</span>
+    <span id="ghost-name" class="text-lg font-extrabold text-slate-800">リンゴ</span>
+  </div>
+
+  <header class="w-full bg-white/80 backdrop-blur-md border-b-4 border-slate-200/80 px-4 py-2 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+    <div class="flex items-center gap-2">
+      <div class="bg-gradient-to-tr from-amber-400 to-red-400 text-white rounded-2xl p-2 shadow-md">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C20.832 18.477 19.247 18 17.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+      </div>
+      <div>
+        <h1 class="text-xl md:text-2xl font-black bg-gradient-to-r from-red-500 via-amber-500 to-emerald-600 bg-clip-text text-transparent">
+          3しょくしょくひんぐん パズル
+        </h1>
+        <p class="text-xs font-bold text-slate-500 hidden sm:block">しょうがくせいむけ たのしいしょくいくアプリ</p>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex items-center gap-2">
+      <button id="nav-game-btn" onclick="switchTab('game')" class="px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl font-black text-sm sm:text-base transition border-b-4 bg-indigo-500 hover:bg-indigo-600 text-white border-indigo-700 shadow-md flex items-center gap-1">
+        <span>🧩</span> 分類ゲーム
+      </button>
+      <button id="nav-meal-btn" onclick="switchTab('meal')" class="px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl font-black text-sm sm:text-base transition border-b-4 bg-slate-200 hover:bg-slate-300 text-slate-700 border-slate-300 flex items-center gap-1">
+        <span>🍱</span> ごはんづくり
+      </button>
+      <button onclick="openGitHubModal()" class="p-2 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-xl border-b-4 border-amber-300 font-bold transition flex items-center gap-1 text-xs sm:text-sm" title="GitHub Pagesでのつくりかた">
+        <span>🚀</span> <span class="hidden md:inline">GitHub公開</span>
+      </button>
+      <button id="sound-toggle-btn" onclick="toggleSound()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border-b-4 border-slate-300 font-bold text-lg">
+        🔊
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 flex flex-col">
+
+    <!-- TAB 1: CLASSIFICATION GAME -->
+    <section id="tab-game" class="flex-1 flex flex-col justify-between gap-4">
+      
+      <!-- Top Control Bar: Mode Toggle & Stats -->
+      <div class="bg-white/90 rounded-2xl p-3 sm:p-4 shadow-md border-2 border-slate-200 flex flex-wrap items-center justify-between gap-3">
+        
+        <!-- Mode Toggle -->
+        <div class="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+          <button id="mode-practice-btn" onclick="setGameMode('practice')" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition bg-white text-indigo-600 shadow-sm">
+            🔰 れんしゅう (時間なし)
+          </button>
+          <button id="mode-challenge-btn" onclick="setGameMode('challenge')" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition text-slate-600 hover:text-slate-900">
+            ⏱️ チャレンジ (60びょう)
+          </button>
+        </div>
+
+        <!-- Score / Combo / Timer Stats -->
+        <div class="flex items-center gap-4 sm:gap-6 ml-auto">
+          <div id="timer-box" class="hidden flex items-center gap-1.5 bg-rose-50 border-2 border-rose-200 px-3 py-1 rounded-xl">
+            <span class="text-lg">⏳</span>
+            <span id="timer-display" class="font-black text-rose-600 text-lg sm:text-xl">60</span><span class="text-xs text-rose-500 font-bold">びょう</span>
+          </div>
+
+          <div class="flex items-center gap-1 bg-amber-50 border-2 border-amber-200 px-3 py-1 rounded-xl">
+            <span class="text-lg">🔥</span>
+            <span id="combo-display" class="font-black text-amber-600 text-lg sm:text-xl">0</span><span class="text-xs text-amber-500 font-bold">れんぞく</span>
+          </div>
+
+          <div class="flex items-center gap-1 bg-emerald-50 border-2 border-emerald-200 px-3 py-1 rounded-xl">
+            <span class="text-lg">⭐️</span>
+            <span id="score-display" class="font-black text-emerald-600 text-xl sm:text-2xl">0</span><span class="text-xs text-emerald-500 font-bold">てん</span>
+          </div>
+
+          <button onclick="resetGame()" class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition" title="リセット">
+            🔄
+          </button>
+        </div>
+      </div>
+
+      <div class="flex-1 flex flex-col justify-center items-center my-2 min-h-[160px] relative">
+        <div class="text-center mb-2">
+          <p class="text-slate-600 text-xs sm:text-sm font-extrabold">
+            👇 たべものをタップするか、下の【あか・きいろ・みどり】の箱（はこ）へドラッグしよう！
+          </p>
+        </div>
+
+        <!-- Active Food Cards Container -->
+        <div id="food-card-area" class="flex flex-wrap justify-center items-center gap-3 sm:gap-5 w-full min-h-[120px]">
+          <!-- Food cards dynamically injected here -->
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mt-auto">
+        
+        <!-- RED BASKET -->
+        <div id="zone-red" onclick="handleBasketClick('red')" 
+             class="group-zone relative bg-gradient-to-b from-red-50 to-red-100/80 border-4 border-red-400 hover:border-red-500 rounded-3xl p-3 sm:p-4 shadow-lg flex flex-col justify-between transition-all transform active:scale-98 cursor-pointer min-h-[200px]"
+             data-group="red">
+          <div class="flex items-center justify-between bg-red-500 text-white px-3 py-1.5 rounded-2xl shadow-sm">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xl">🥩</span>
+              <span class="font-black text-lg sm:text-xl">あか（赤）</span>
+            </div>
+            <span class="text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full">体をつくる</span>
+          </div>
+
+          <p class="text-xs sm:text-sm font-bold text-red-800 text-center my-2 bg-white/60 rounded-xl p-1.5">
+            ち や にく、ほね をつくる！<br>
+            <span class="text-red-600 text-[11px] font-normal">（たんぱくしつ・カルシウム）</span>
+          </p>
+
+          <!-- Dropped items showcase inside basket -->
+          <div id="basket-red-items" class="flex flex-wrap gap-1.5 justify-center items-center min-h-[60px] bg-white/40 rounded-2xl p-2 border border-red-200/50">
+            <span class="text-xs text-red-300 font-bold placeholder-text">ここへいれる</span>
+          </div>
+        </div>
+
+        <!-- YELLOW BASKET -->
+        <div id="zone-yellow" onclick="handleBasketClick('yellow')" 
+             class="group-zone relative bg-gradient-to-b from-amber-50 to-amber-100/80 border-4 border-amber-400 hover:border-amber-500 rounded-3xl p-3 sm:p-4 shadow-lg flex flex-col justify-between transition-all transform active:scale-98 cursor-pointer min-h-[200px]"
+             data-group="yellow">
+          <div class="flex items-center justify-between bg-amber-500 text-white px-3 py-1.5 rounded-2xl shadow-sm">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xl">🍚</span>
+              <span class="font-black text-lg sm:text-xl">きいろ（黄）</span>
+            </div>
+            <span class="text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full">熱や力になる</span>
+          </div>
+
+          <p class="text-xs sm:text-sm font-bold text-amber-800 text-center my-2 bg-white/60 rounded-xl p-1.5">
+            うごくエネルギー になる！<br>
+            <span class="text-amber-600 text-[11px] font-normal">（炭水化物・ししつ）</span>
+          </p>
+
+          <!-- Dropped items showcase inside basket -->
+          <div id="basket-yellow-items" class="flex flex-wrap gap-1.5 justify-center items-center min-h-[60px] bg-white/40 rounded-2xl p-2 border border-amber-200/50">
+            <span class="text-xs text-amber-300 font-bold placeholder-text">ここへいれる</span>
+          </div>
+        </div>
+
+        <!-- GREEN BASKET -->
+        <div id="zone-green" onclick="handleBasketClick('green')" 
+             class="group-zone relative bg-gradient-to-b from-emerald-50 to-emerald-100/80 border-4 border-emerald-400 hover:border-emerald-500 rounded-3xl p-3 sm:p-4 shadow-lg flex flex-col justify-between transition-all transform active:scale-98 cursor-pointer min-h-[200px]"
+             data-group="green">
+          <div class="flex items-center justify-between bg-emerald-500 text-white px-3 py-1.5 rounded-2xl shadow-sm">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xl">🥦</span>
+              <span class="font-black text-lg sm:text-xl">みどり（緑）</span>
+            </div>
+            <span class="text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full">調子を整える</span>
+          </div>
+
+          <p class="text-xs sm:text-sm font-bold text-emerald-800 text-center my-2 bg-white/60 rounded-xl p-1.5">
+            かぜ をふせぎ、ちょうし をととのえる！<br>
+            <span class="text-emerald-600 text-[11px] font-normal">（ビタミン・せんい）</span>
+          </p>
+
+          <!-- Dropped items showcase inside basket -->
+          <div id="basket-green-items" class="flex flex-wrap gap-1.5 justify-center items-center min-h-[60px] bg-white/40 rounded-2xl p-2 border border-emerald-200/50">
+            <span class="text-xs text-emerald-300 font-bold placeholder-text">ここへいれる</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="tab-meal" class="hidden flex-1 flex flex-col gap-4">
+      <div class="bg-white/90 rounded-3xl p-4 sm:p-6 shadow-xl border-2 border-slate-200 flex flex-col gap-4">
+        
+        <div class="text-center max-w-2xl mx-auto">
+          <span class="text-4xl mb-1 inline-block">🍱</span>
+          <h2 class="text-2xl sm:text-3xl font-black text-slate-800">えいようバッチリ！ごはんをつくろう</h2>
+          <p class="text-slate-600 font-bold text-sm mt-1">
+            「あか・きいろ・みどり」の食材をバランスよく組み合わせて、健康（けんこう）なメニューをかんせいさせよう！
+          </p>
+        </div>
+
+        <!-- Selected Plates Area -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 my-2">
+          
+          <!-- Red Slot -->
+          <div class="bg-red-50 border-3 border-dashed border-red-300 rounded-2xl p-4 flex flex-col items-center justify-center min-h-[140px] relative">
+            <span class="text-xs font-bold text-red-500 mb-1">【あか】体をつくるおかず</span>
+            <div id="meal-slot-red" class="flex flex-col items-center">
+              <span class="text-4xl opacity-30">🍗</span>
+              <span class="text-xs font-bold text-slate-400 mt-1">未選択</span>
+            </div>
+            <button onclick="clearMealSlot('red')" class="absolute top-2 right-2 text-xs bg-red-100 hover:bg-red-200 text-red-700 font-bold px-2 py-0.5 rounded-full hidden" id="clear-red-btn">✕</button>
+          </div>
+
+          <!-- Yellow Slot -->
+          <div class="bg-amber-50 border-3 border-dashed border-amber-300 rounded-2xl p-4 flex flex-col items-center justify-center min-h-[140px] relative">
+            <span class="text-xs font-bold text-amber-600 mb-1">【きいろ】しゅしょく（ごはん・パン）</span>
+            <div id="meal-slot-yellow" class="flex flex-col items-center">
+              <span class="text-4xl opacity-30">🍚</span>
+              <span class="text-xs font-bold text-slate-400 mt-1">未選択</span>
+            </div>
+            <button onclick="clearMealSlot('yellow')" class="absolute top-2 right-2 text-xs bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold px-2 py-0.5 rounded-full hidden" id="clear-yellow-btn">✕</button>
+          </div>
+
+          <!-- Green Slot -->
+          <div class="bg-emerald-50 border-3 border-dashed border-emerald-300 rounded-2xl p-4 flex flex-col items-center justify-center min-h-[140px] relative">
+            <span class="text-xs font-bold text-emerald-600 mb-1">【みどり】やさい・くだもの</span>
+            <div id="meal-slot-green" class="flex flex-col items-center">
+              <span class="text-4xl opacity-30">🥗</span>
+              <span class="text-xs font-bold text-slate-400 mt-1">未選択</span>
+            </div>
+            <button onclick="clearMealSlot('green')" class="absolute top-2 right-2 text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-bold px-2 py-0.5 rounded-full hidden" id="clear-green-btn">✕</button>
+          </div>
+
+        </div>
+
+        <!-- Meal Evaluation Button -->
+        <div class="text-center">
+          <button id="check-meal-btn" onclick="evaluateMeal()" disabled class="px-8 py-3 bg-slate-300 text-slate-500 font-black text-lg rounded-2xl shadow-lg border-b-4 border-slate-400 cursor-not-allowed transition transform active:scale-95">
+            ✨ このメニューでかんせい！
+          </button>
+        </div>
+
+        <!-- Meal Ingredient Selector Options -->
+        <div class="border-t border-slate-200 pt-4 mt-2">
+          <h3 class="text-sm font-extrabold text-slate-700 mb-3 text-center">👇 食材をえらんでタップしてね</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <!-- Red Selectable Items -->
+            <div class="bg-red-50/50 rounded-xl p-2 border border-red-100">
+              <div class="text-xs font-black text-red-600 mb-2 text-center">あかのたべもの</div>
+              <div id="meal-options-red" class="flex flex-wrap gap-1.5 justify-center"></div>
+            </div>
+            <!-- Yellow Selectable Items -->
+            <div class="bg-amber-50/50 rounded-xl p-2 border border-amber-100">
+              <div class="text-xs font-black text-amber-600 mb-2 text-center">きいろのたべもの</div>
+              <div id="meal-options-yellow" class="flex flex-wrap gap-1.5 justify-center"></div>
+            </div>
+            <!-- Green Selectable Items -->
+            <div class="bg-emerald-50/50 rounded-xl p-2 border border-emerald-100">
+              <div class="text-xs font-black text-emerald-600 mb-2 text-center">みどりのたべもの</div>
+              <div id="meal-options-green" class="flex flex-wrap gap-1.5 justify-center"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- GAME OVER / RESULTS MODAL -->
+  <div id="results-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border-4 border-amber-300 text-center animate-pop relative">
+      <div class="text-5xl mb-2" id="result-emoji">🎉</div>
+      <h2 class="text-2xl sm:text-3xl font-black text-slate-800" id="result-title">クリアおめでとう！</h2>
+      
+      <!-- Stars Display -->
+      <div class="flex justify-center gap-2 my-3 text-4xl" id="stars-container">
+        <span>⭐</span><span>⭐</span><span>⭐</span>
+      </div>
+
+      <p class="text-slate-600 font-bold mb-4" id="result-message">
+        すごい！すべての食材をただしく分類できたよ！
+      </p>
+
+      <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 mb-6">
+        <div class="text-xs font-bold text-amber-800">かくのうスコア</div>
+        <div class="text-3xl font-black text-amber-600" id="final-score">0 点</div>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="closeResultsModal(); resetGame();" class="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base rounded-2xl border-b-4 border-emerald-700 shadow-md transition transform active:scale-95">
+          🔄 もういちどあそぶ
+        </button>
+        <button onclick="closeResultsModal(); switchTab('meal');" class="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-black text-base rounded-2xl border-b-4 border-amber-700 shadow-md transition transform active:scale-95">
+          🍱 ごはんをつくる
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GITHUB PAGES GUIDE MODAL -->
+  <div id="github-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl p-6 max-w-2xl w-full shadow-2xl border-4 border-indigo-200 animate-pop max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-black text-indigo-900 flex items-center gap-2">
+          <span>🚀</span> GitHub Pages で無料公開する方法
+        </h3>
+        <button onclick="closeGitHubModal()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">✕</button>
+      </div>
+
+      <div class="space-y-4 text-xs sm:text-sm text-slate-700 font-medium">
+        <div class="bg-indigo-50 p-3 rounded-2xl border border-indigo-100">
+          <p class="font-bold text-indigo-900">✨ このコード1つで完全に動くWebアプリです！</p>
+          <p>ソフトのインストール不要で、GitHubの無料機能を使って世界中に公開できます。</p>
+        </div>
+
+        <ol class="list-decimal list-inside space-y-3 font-semibold">
+          <li class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <strong>GitHubアカウントを作成</strong>（未所持の場合）<br>
+            <a href="https://github.com" target="_blank" class="text-indigo-600 underline">github.com</a> に登録します。
+          </li>
+          <li class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <strong>新しいリポジトリ（Repository）を作成</strong><br>
+            「New Repository」をクリックし、名前（例: <code class="bg-slate-200 px-1 rounded">3shoku-game</code>）を入力して作成します。
+          </li>
+          <li class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <strong>index.html をアップロード</strong><br>
+            「uploading an existing file」を選択し、このファイル（名前を <code class="bg-amber-100 text-amber-900 px-1 rounded font-bold">index.html</code> にしてください）をドラッグ＆ドロップして「Commit changes」を押します。
+          </li>
+          <li class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <strong>GitHub Pages を有効化</strong><br>
+            リポジトリの <strong>Settings ➔ Pages</strong> を開き、Branch を <code class="bg-slate-200 px-1 rounded">main</code> に設定して 「Save」を押します。
+          </li>
+          <li class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 text-emerald-900">
+            <strong>iPadで開いてホーム画面に追加！</strong><br>
+            数分後に発行されるURL（例: <code class="text-xs">https://username.github.io/3shoku-game</code>）をiPadのSafariで開きます。「共有」ボタン ➔ 「ホーム画面に追加」でアプリ化できます！
+          </li>
+        </ol>
+      </div>
+
+      <div class="mt-6 text-center">
+        <button onclick="closeGitHubModal()" class="px-6 py-2.5 bg-indigo-600 text-white font-black rounded-xl hover:bg-indigo-700 transition">
+          わかりました！
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       1. DATA STRUCTURES & FOOD DATABASE
+       ========================================================================== */
+    const FOOD_DATABASE = [
+      // RED GROUP (体をつくる)
+      { id: 'beef', name: 'ぎゅうにく', emoji: '🥩', group: 'red', desc: 'ち や にく になる' },
+      { id: 'pork', name: 'ぶたにく', emoji: '🥓', group: 'red', desc: 'ち や にく になる' },
+      { id: 'chicken', name: 'とりにく', emoji: '🍗', group: 'red', desc: 'ち や にく になる' },
+      { id: 'fish', name: 'さかな', emoji: '🐟', group: 'red', desc: 'ほね と にく をつくる' },
+      { id: 'egg', name: 'たまご', emoji: '🥚', group: 'red', desc: 'えいよう たっぷり' },
+      { id: 'tofu', name: 'とうふ', emoji: '⬜', group: 'red', desc: 'だいず から できる' },
+      { id: 'milk', name: 'ぎゅうにゅう', emoji: '🥛', group: 'red', desc: 'ほね を つよくする' },
+      { id: 'cheese', name: 'チーズ', emoji: '🧀', group: 'red', desc: 'カルシウム たっぷり' },
+      { id: '納豆', name: 'なっとう', emoji: '🫘', group: 'red', desc: 'おなか に いい' },
+
+      // YELLOW GROUP (熱や力になる)
+      { id: 'rice', name: 'ごはん', emoji: '🍚', group: 'yellow', desc: 'げんき の もと' },
+      { id: 'bread', name: 'パン', emoji: '🍞', group: 'yellow', desc: 'あさの エネルギー' },
+      { id: 'noodle', name: 'ラーメン', emoji: '🍜', group: 'yellow', desc: 'ちから が でる' },
+      { id: 'pasta', name: 'スパゲティ', emoji: '🍝', group: 'yellow', desc: 'エネルギー になる' },
+      { id: 'potato', name: 'じゃがいも', emoji: '🥔', group: 'yellow', desc: 'ほくほく エネルギー' },
+      { id: 'sweet_potato', name: 'さつまいも', emoji: '🍠', group: 'yellow', desc: 'あまい エネルギー' },
+      { id: 'oil', name: 'サラダあぶら', emoji: '🫗', group: 'yellow', desc: 'たいせつ な ししつ' },
+      { id: 'butter', name: 'バター', emoji: '🧈', group: 'yellow', desc: 'エネルギー になる' },
+      { id: 'banana', name: 'バナナ', emoji: '🍌', group: 'yellow', desc: 'すぐ エネルギー になる' },
+
+      // GREEN GROUP (調子を整える)
+      { id: 'tomato', name: 'トマト', emoji: '🍅', group: 'green', desc: 'かぜ を ふせぐ' },
+      { id: 'broccoli', name: 'ブロッコリー', emoji: '🥦', group: 'green', desc: 'ビタミン たっぷり' },
+      { id: 'carrot', name: 'にんじん', emoji: '🥕', group: 'green', desc: 'め に いい' },
+      { id: 'apple', name: 'りんご', emoji: '🍎', group: 'green', desc: 'おなか を きれい に' },
+      { id: 'cabbage', name: 'キャベツ', emoji: '🥬', group: 'green', desc: 'い を まもる' },
+      { id: 'mushroom', name: 'きのこ', emoji: '🍄', group: 'green', desc: 'ちょうし を ととのえる' },
+      { id: 'spinach', name: 'ほうれんそう', emoji: '🥬', group: 'green', desc: 'ち から が わく' },
+      { id: 'strawberry', name: 'いちご', emoji: '🍓', group: 'green', desc: 'ビタミンC たっぷり' },
+      { id: 'orange', name: 'みかん', emoji: '🍊', group: 'green', desc: 'かぜ よぼう' }
+    ];
+
+    /* ==========================================================================
+       2. SOUND EFFECT SYNTHESIZER (Web Audio API - No external files)
+       ========================================================================== */
+    class SoundManager {
+      constructor() {
+        this.ctx = null;
+        this.soundEnabled = true;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioCtx();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playCorrect() {
+        if (!this.soundEnabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        
+        // Happy ascending Arpeggio (C5, E5, G5, C6)
+        const freqs = [523.25, 659.25, 783.99, 1046.50];
+        freqs.forEach((f, index) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, now + index * 0.08);
+          
+          gain.gain.setValueAtTime(0.2, now + index * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.08 + 0.25);
+          
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          
+          osc.start(now + index * 0.08);
+          osc.stop(now + index * 0.08 + 0.25);
+        });
+      }
+
+      playWrong() {
+        if (!this.soundEnabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.exponentialRampToValueAtTime(110, now + 0.25);
+        
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        
+        osc.start(now);
+        osc.stop(now + 0.25);
+      }
+
+      playPop() {
+        if (!this.soundEnabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, now);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+        
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+        
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        
+        osc.start(now);
+        osc.stop(now + 0.05);
+      }
+
+      playFanfare() {
+        if (!this.soundEnabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        
+        // Victory fanfare notes
+        const notes = [
+          { f: 523.25, d: 0.15 },
+          { f: 659.25, d: 0.15 },
+          { f: 783.99, d: 0.15 },
+          { f: 1046.50, d: 0.4 }
+        ];
+
+        let offset = 0;
+        notes.forEach(note => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(note.f, now + offset);
+          
+          gain.gain.setValueAtTime(0.15, now + offset);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + offset + note.d);
+          
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          
+          osc.start(now + offset);
+          osc.stop(now + offset + note.d);
+          offset += note.d * 0.8;
+        });
+      }
+    }
+
+    const sound = new SoundManager();
+
+    function toggleSound() {
+      sound.soundEnabled = !sound.soundEnabled;
+      const btn = document.getElementById('sound-toggle-btn');
+      btn.textContent = sound.soundEnabled ? '🔊' : '🔇';
+    }
+
+    /* ==========================================================================
+       3. GAME STATE & CONTROL LOGIC
+       ========================================================================== */
+    let currentGameMode = 'practice'; // 'practice' or 'challenge'
+    let score = 0;
+    let combo = 0;
+    let timer = 60;
+    let timerInterval = null;
+    let isGameRunning = false;
+    
+    let activeQueue = [];
+    let selectedFoodForTap = null; // For tap-to-select support
+
+    // Meal Builder State
+    let selectedMeal = { red: null, yellow: null, green: null };
+
+    /* ==========================================================================
+       4. GAME INITIALIZATION & TAB SWITCHING
+       ========================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      initGame();
+      initMealBuilderOptions();
+      setupTouchDragAndDrop();
+    });
+
+    function switchTab(tabName) {
+      sound.playPop();
+      const gameTab = document.getElementById('tab-game');
+      const mealTab = document.getElementById('tab-meal');
+      const navGameBtn = document.getElementById('nav-game-btn');
+      const navMealBtn = document.getElementById('nav-meal-btn');
+
+      if (tabName === 'game') {
+        gameTab.classList.remove('hidden');
+        mealTab.classList.add('hidden');
+        navGameBtn.className = "px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl font-black text-sm sm:text-base transition border-b-4 bg-indigo-500 hover:bg-indigo-600 text-white border-indigo-700 shadow-md flex items-center gap-1";
+        navMealBtn.className = "px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl font-black text-sm sm:text-base transition border-b-4 bg-slate-200 hover:bg-slate-300 text-slate-700 border-slate-300 flex items-center gap-1";
+      } else {
+        gameTab.classList.add('hidden');
+        mealTab.classList.remove('hidden');
+        navGameBtn.className = "px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl font-black text-sm sm:text-base transition border-b-4 bg-slate-200 hover:bg-slate-300 text-slate-700 border-slate-300 flex items-center gap-1";
+        navMealBtn.className = "px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl font-black text-sm sm:text-base transition border-b-4 bg-amber-500 hover:bg-amber-600 text-white border-amber-700 shadow-md flex items-center gap-1";
+      }
+    }
+
+    function setGameMode(mode) {
+      sound.playPop();
+      currentGameMode = mode;
+      
+      const practiceBtn = document.getElementById('mode-practice-btn');
+      const challengeBtn = document.getElementById('mode-challenge-btn');
+      const timerBox = document.getElementById('timer-box');
+
+      if (mode === 'practice') {
+        practiceBtn.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition bg-white text-indigo-600 shadow-sm";
+        challengeBtn.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition text-slate-600 hover:text-slate-900";
+        timerBox.classList.add('hidden');
+      } else {
+        challengeBtn.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition bg-white text-rose-600 shadow-sm";
+        practiceBtn.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition text-slate-600 hover:text-slate-900";
+        timerBox.classList.remove('hidden');
+      }
+      resetGame();
+    }
+
+    function resetGame() {
+      clearInterval(timerInterval);
+      score = 0;
+      combo = 0;
+      timer = 60;
+      isGameRunning = true;
+      selectedFoodForTap = null;
+
+      document.getElementById('score-display').textContent = score;
+      document.getElementById('combo-display').textContent = combo;
+      document.getElementById('timer-display').textContent = timer;
+
+      // Clear basket DOMs
+      ['red', 'yellow', 'green'].forEach(g => {
+        const basket = document.getElementById(`basket-${g}-items`);
+        basket.innerHTML = `<span class="text-xs text-${g === 'red' ? 'red' : g === 'yellow' ? 'amber' : 'emerald'}-300 font-bold placeholder-text">ここへいれる</span>`;
+      });
+
+      // Prepare shuffled queue of foods
+      activeQueue = [...FOOD_DATABASE].sort(() => Math.random() - 0.5);
+      renderFoodDeck();
+
+      if (currentGameMode === 'challenge') {
+        startTimer();
+      }
+    }
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        timer--;
+        document.getElementById('timer-display').textContent = timer;
+        if (timer <= 0) {
+          clearInterval(timerInterval);
+          finishGame();
+        }
+      }, 1000);
+    }
+
+    /* ==========================================================================
+       5. CARD RENDERING & TAP/DRAG HANDLERS
+       ========================================================================== */
+    function renderFoodDeck() {
+      const area = document.getElementById('food-card-area');
+      area.innerHTML = '';
+
+      if (activeQueue.length === 0) {
+        finishGame();
+        return;
+      }
+
+      // Show 2 active cards at a time for choice and clear touch targets
+      const cardsToShow = activeQueue.slice(0, 2);
+
+      cardsToShow.forEach((food) => {
+        const card = document.createElement('div');
+        card.className = `food-card bg-white border-4 border-indigo-200 hover:border-indigo-400 rounded-3xl p-3 sm:p-4 shadow-xl flex flex-col items-center justify-center cursor-grab active:cursor-grabbing transform transition hover:-translate-y-1 active:scale-95 animate-pop w-32 sm:w-40 h-32 sm:h-40 select-none relative ${selectedFoodForTap?.id === food.id ? 'ring-4 ring-amber-400 border-amber-400 bg-amber-50' : ''}`;
+        card.setAttribute('draggable', 'true');
+        card.setAttribute('data-food-id', food.id);
+
+        card.innerHTML = `
+          <span class="text-5xl sm:text-6xl mb-1 pointer-events-none">${food.emoji}</span>
+          <span class="font-extrabold text-slate-800 text-sm sm:text-base pointer-events-none">${food.name}</span>
+          <span class="text-[10px] text-slate-400 font-bold pointer-events-none">${food.desc}</span>
+        `;
+
+        // Desktop Drag events
+        card.addEventListener('dragstart', (e) => handleDragStart(e, food));
+        card.addEventListener('dragend', handleDragEnd);
+
+        // Tap/Click to select support
+        card.addEventListener('click', (e) => handleCardTap(e, food));
+
+        area.appendChild(card);
+      });
+    }
+
+    function handleCardTap(e, food) {
+      e.stopPropagation();
+      sound.playPop();
+      if (selectedFoodForTap?.id === food.id) {
+        selectedFoodForTap = null;
+      } else {
+        selectedFoodForTap = food;
+      }
+      renderFoodDeck();
+    }
+
+    function handleBasketClick(group) {
+      if (!selectedFoodForTap) return;
+      processClassification(selectedFoodForTap, group);
+      selectedFoodForTap = null;
+    }
+
+    /* Desktop Drag & Drop Handlers */
+    let draggedFood = null;
+
+    function handleDragStart(e, food) {
+      draggedFood = food;
+      e.dataTransfer.setData('text/plain', food.id);
+      e.target.classList.add('dragging');
+      sound.playPop();
+    }
+
+    function handleDragEnd(e) {
+      e.target.classList.remove('dragging');
+      draggedFood = null;
+    }
+
+    // Setup Zone drop handlers
+    document.querySelectorAll('.group-zone').forEach(zone => {
+      zone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        zone.classList.add('brightness-95', 'scale-101');
+      });
+
+      zone.addEventListener('dragleave', () => {
+        zone.classList.remove('brightness-95', 'scale-101');
+      });
+
+      zone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        zone.classList.remove('brightness-95', 'scale-101');
+        const targetGroup = zone.getAttribute('data-group');
+        if (draggedFood) {
+          processClassification(draggedFood, targetGroup);
+        }
+      });
+    });
+
+    /* ==========================================================================
+       6. TOUCH DRAG & DROP FOR IPAD (Custom Pointer/Touch Tracking)
+       ========================================================================== */
+    function setupTouchDragAndDrop() {
+      const ghost = document.getElementById('touch-ghost');
+      const ghostEmoji = document.getElementById('ghost-emoji');
+      const ghostName = document.getElementById('ghost-name');
+
+      let touchItem = null;
+      let activeFoodData = null;
+
+      document.addEventListener('touchstart', (e) => {
+        const card = e.target.closest('.food-card');
+        if (!card) return;
+
+        const foodId = card.getAttribute('data-food-id');
+        activeFoodData = FOOD_DATABASE.find(f => f.id === foodId);
+        if (!activeFoodData) return;
+
+        touchItem = card;
+        ghostEmoji.textContent = activeFoodData.emoji;
+        ghostName.textContent = activeFoodData.name;
+
+        const touch = e.touches[0];
+        ghost.style.left = `${touch.clientX}px`;
+        ghost.style.top = `${touch.clientY}px`;
+        ghost.style.display = 'flex';
+      }, { passive: true });
+
+      document.addEventListener('touchmove', (e) => {
+        if (!touchItem || !ghost) return;
+        const touch = e.touches[0];
+        ghost.style.left = `${touch.clientX}px`;
+        ghost.style.top = `${touch.clientY}px`;
+      }, { passive: true });
+
+      document.addEventListener('touchend', (e) => {
+        if (!touchItem || !activeFoodData) return;
+
+        const touch = e.changedTouches[0];
+        ghost.style.display = 'none';
+
+        // Find element under touch point
+        const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+        const zone = dropTarget ? dropTarget.closest('.group-zone') : null;
+
+        if (zone) {
+          const targetGroup = zone.getAttribute('data-group');
+          processClassification(activeFoodData, targetGroup);
+        }
+
+        touchItem = null;
+        activeFoodData = null;
+      });
+    }
+
+    /* ==========================================================================
+       7. CLASSIFICATION & FEEDBACK LOGIC
+       ========================================================================== */
+    function processClassification(food, targetGroup) {
+      const isCorrect = food.group === targetGroup;
+
+      if (isCorrect) {
+        sound.playCorrect();
+        combo++;
+        score += 10 + (combo > 1 ? (combo - 1) * 5 : 0);
+
+        // Visual confetti pulse on correct drop
+        confetti({
+          particleCount: 25,
+          spread: 60,
+          origin: { y: 0.7 }
+        });
+
+        // Add small icon badge inside basket
+        addBadgeToBasket(targetGroup, food);
+
+        // Remove food from active Queue
+        activeQueue = activeQueue.filter(f => f.id !== food.id);
+
+      } else {
+        sound.playWrong();
+        combo = 0;
+
+        // Shake target basket
+        const zone = document.getElementById(`zone-${targetGroup}`);
+        zone.classList.add('animate-shake');
+        setTimeout(() => zone.classList.remove('animate-shake'), 400);
+      }
+
+      // Update UI displays
+      document.getElementById('score-display').textContent = score;
+      document.getElementById('combo-display').textContent = combo;
+
+      renderFoodDeck();
+    }
+
+    function addBadgeToBasket(group, food) {
+      const basket = document.getElementById(`basket-${group}-items`);
+      const placeholder = basket.querySelector('.placeholder-text');
+      if (placeholder) placeholder.remove();
+
+      const badge = document.createElement('span');
+      badge.className = "inline-flex items-center gap-1 bg-white/90 px-2 py-1 rounded-xl text-xs font-black shadow-sm animate-pop border border-slate-200";
+      badge.innerHTML = `<span>${food.emoji}</span><span>${food.name}</span>`;
+      basket.appendChild(badge);
+    }
+
+    function finishGame() {
+      clearInterval(timerInterval);
+      sound.playFanfare();
+
+      // Confetti burst
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+
+      const modal = document.getElementById('results-modal');
+      const title = document.getElementById('result-title');
+      const message = document.getElementById('result-message');
+      const stars = document.getElementById('stars-container');
+      const finalScore = document.getElementById('final-score');
+
+      finalScore.textContent = `${score} 点`;
+
+      if (score >= 120) {
+        title.textContent = "🏆 かんぺき！しょくいくマスター！";
+        message.textContent = "すばらしい！3つのグループを完璧に覚えられているよ！";
+        stars.innerHTML = "⭐ ⭐ ⭐";
+      } else if (score >= 60) {
+        title.textContent = "✨ ぶじクリア！たいへんよくできました！";
+        message.textContent = "この調子で、毎日のごはんの栄養も意識してみよう！";
+        stars.innerHTML = "⭐ ⭐ ⭐";
+      } else {
+        title.textContent = "👍 クリア！ナイスチャレンジ！";
+        message.textContent = "なんども練習して、もっと高得点をめざそう！";
+        stars.innerHTML = "⭐ ⭐ ⚪";
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeResultsModal() {
+      document.getElementById('results-modal').classList.add('hidden');
+    }
+
+    /* ==========================================================================
+       8. MEAL BUILDER MODE LOGIC
+       ========================================================================== */
+    function initMealBuilderOptions() {
+      ['red', 'yellow', 'green'].forEach(group => {
+        const container = document.getElementById(`meal-options-${group}`);
+        container.innerHTML = '';
+
+        const foodsInGroup = FOOD_DATABASE.filter(f => f.group === group);
+        foodsInGroup.forEach(food => {
+          const btn = document.createElement('button');
+          btn.className = "px-2.5 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold shadow-sm transition active:scale-95 flex items-center gap-1";
+          btn.innerHTML = `<span>${food.emoji}</span><span>${food.name}</span>`;
+          btn.onclick = () => selectMealIngredient(group, food);
+          container.appendChild(btn);
+        });
+      });
+    }
+
+    function selectMealIngredient(group, food) {
+      sound.playPop();
+      selectedMeal[group] = food;
+
+      const slot = document.getElementById(`meal-slot-${group}`);
+      const clearBtn = document.getElementById(`clear-${group}-btn`);
+
+      slot.innerHTML = `
+        <span class="text-5xl mb-1 animate-pop">${food.emoji}</span>
+        <span class="text-sm font-black text-slate-800">${food.name}</span>
+      `;
+      clearBtn.classList.remove('hidden');
+
+      checkMealCompletion();
+    }
+
+    function clearMealSlot(group) {
+      sound.playPop();
+      selectedMeal[group] = null;
+
+      const slot = document.getElementById(`meal-slot-${group}`);
+      const clearBtn = document.getElementById(`clear-${group}-btn`);
+
+      const defaultIcon = group === 'red' ? '🍗' : group === 'yellow' ? '🍚' : '🥗';
+      slot.innerHTML = `
+        <span class="text-4xl opacity-30">${defaultIcon}</span>
+        <span class="text-xs font-bold text-slate-400 mt-1">未選択</span>
+      `;
+      clearBtn.classList.add('hidden');
+
+      checkMealCompletion();
+    }
+
+    function checkMealCompletion() {
+      const checkBtn = document.getElementById('check-meal-btn');
+      const isComplete = selectedMeal.red && selectedMeal.yellow && selectedMeal.green;
+
+      if (isComplete) {
+        checkBtn.disabled = false;
+        checkBtn.className = "px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-lg rounded-2xl shadow-lg border-b-4 border-emerald-700 cursor-pointer transition transform active:scale-95 animate-pulse-gentle";
+      } else {
+        checkBtn.disabled = true;
+        checkBtn.className = "px-8 py-3 bg-slate-300 text-slate-500 font-black text-lg rounded-2xl shadow-lg border-b-4 border-slate-400 cursor-not-allowed transition transform active:scale-95";
+      }
+    }
+
+    function evaluateMeal() {
+      sound.playFanfare();
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.5 }
+      });
+
+      const modal = document.getElementById('results-modal');
+      const title = document.getElementById('result-title');
+      const message = document.getElementById('result-message');
+      const stars = document.getElementById('stars-container');
+      const finalScore = document.getElementById('final-score');
+
+      title.textContent = "🥗 えいようバッチリごはん！";
+      message.innerHTML = `
+        【あか】${selectedMeal.red.name}（体をつくる）<br>
+        【きいろ】${selectedMeal.yellow.name}（エネルギー）<br>
+        【みどり】${selectedMeal.green.name}（ちょうしをととのえる）<br><br>
+        3つのグループがそろった最高のバランスメニューだよ！
+      `;
+      stars.innerHTML = "🌟 🌟 🌟";
+      finalScore.textContent = "100 点満点！";
+
+      modal.classList.remove('hidden');
+    }
+
+    /* GitHub Modal functions */
+    function openGitHubModal() {
+      sound.playPop();
+      document.getElementById('github-modal').classList.remove('hidden');
+    }
+
+    function closeGitHubModal() {
+      document.getElementById('github-modal').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
