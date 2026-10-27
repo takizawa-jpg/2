@@ -63,6 +63,12 @@
       opacity: 0.3;
       transform: scale(0.92);
     }
+
+    /* 非表示時のクリック透過処置 */
+    .hidden {
+      display: none !important;
+      pointer-events: none !important;
+    }
   </style>
 </head>
 <body class="flex flex-col min-h-screen text-slate-800 antialiased selection:bg-none">
@@ -85,10 +91,10 @@
     </div>
 
     <div class="flex items-center gap-2">
-      <button onclick="openRankingModal()" class="px-3 py-1.5 sm:px-4 sm:py-2 bg-amber-400 hover:bg-amber-500 text-amber-950 font-black rounded-xl border-b-4 border-amber-600 shadow-md transition transform active:scale-95 text-xs sm:text-sm flex items-center gap-1">
+      <button type="button" onclick="openRankingModal()" class="px-3 py-1.5 sm:px-4 sm:py-2 bg-amber-400 hover:bg-amber-500 text-amber-950 font-black rounded-xl border-b-4 border-amber-600 shadow-md transition transform active:scale-95 text-xs sm:text-sm flex items-center gap-1 cursor-pointer">
         <span>🏆</span> ランキング
       </button>
-      <button id="sound-toggle-btn" onclick="toggleSound()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border-b-4 border-slate-300 font-bold text-lg">
+      <button type="button" id="sound-toggle-btn" onclick="toggleSound()" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border-b-4 border-slate-300 font-bold text-lg cursor-pointer">
         🔊
       </button>
     </div>
@@ -109,15 +115,4 @@
         </h2>
         
         <p class="text-slate-600 font-bold text-xs sm:text-sm mb-6 leading-relaxed">
-          でてくる食材（たべもの）を<br>
-          <span class="text-red-500 font-black">【あか】</span>
-          <span class="text-amber-500 font-black">【きいろ】</span>
-          <span class="text-emerald-600 font-black">【みどり】</span>
-          のカゴへわけてね！
-        </p>
-
-        <!-- Mode Select Buttons -->
-        <div class="w-full space-y-3 mb-6">
-          <label class="block text-xs font-black text-slate-500 text-left px-1">▼ モードをえらんでスタート</label>
-
-          <button onclick="startGame('challenge')" class="w-full py-4 bg-gradient-to-r from-red-500 to-amber-500 hover:from-red-600 hover:to-amber-600 text-white font-black text-lg sm:text-xl rounded-2xl shadow-lg border-b-4 border-red-700 transform active:scale-95 transition flex items-
+          でてくる食材（たべ
