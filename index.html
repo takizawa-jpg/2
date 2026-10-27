@@ -64,7 +64,7 @@
       transform: scale(0.92);
     }
 
-    /* 非表示時のクリック透過処置 */
+    /* モード非表示時の完全ブロック処置 */
     .hidden {
       display: none !important;
       pointer-events: none !important;
@@ -115,4 +115,46 @@
         </h2>
         
         <p class="text-slate-600 font-bold text-xs sm:text-sm mb-6 leading-relaxed">
-          でてくる食材（たべ
+          でてくる食材（たべもの）を<br>
+          <span class="text-red-500 font-black">【あか】</span>
+          <span class="text-amber-500 font-black">【きいろ】</span>
+          <span class="text-emerald-600 font-black">【みどり】</span>
+          のカゴへわけてね！
+        </p>
+
+        <!-- Mode Select Buttons -->
+        <div class="w-full space-y-3 mb-6">
+          <label class="block text-xs font-black text-slate-500 text-left px-1">▼ モードをえらんでスタート</label>
+
+          <button type="button" onclick="startGame('challenge')" class="w-full py-4 bg-gradient-to-r from-red-500 to-amber-500 hover:from-red-600 hover:to-amber-600 text-white font-black text-lg sm:text-xl rounded-2xl shadow-lg border-b-4 border-red-700 transform active:scale-95 transition flex items-center justify-center gap-2 animate-pulse-subtle cursor-pointer">
+            <span>⏱️</span> 30びょう チャレンジ！（ランキング対応）
+          </button>
+
+          <button type="button" onclick="startGame('hard')" class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-rose-600 hover:from-purple-700 hover:to-rose-700 text-white font-black text-base sm:text-lg rounded-2xl shadow-lg border-b-4 border-purple-800 transform active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer">
+            <span>🔥</span> ハード モード（難問あり・20秒）
+          </button>
+
+          <button type="button" onclick="startGame('practice')" class="w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-black text-base rounded-2xl shadow-md border-b-4 border-indigo-700 transform active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer">
+            <span>🔰</span> れんしゅう モード（じかん むせいげん）
+          </button>
+        </div>
+
+        <button type="button" onclick="openRankingModal()" class="text-xs font-black text-amber-700 bg-amber-100 hover:bg-amber-200 px-4 py-2 rounded-xl transition flex items-center gap-1 cursor-pointer">
+          👑 ハイスコア ランキングをみる
+        </button>
+
+      </div>
+    </section>
+
+    <!-- 2. GAME SCREEN -->
+    <section id="screen-game" class="hidden flex-1 flex flex-col justify-between gap-3">
+      
+      <!-- Top Info Dashboard -->
+      <div class="bg-white/90 rounded-2xl p-3 shadow-md border-2 border-slate-200 flex items-center justify-between">
+        
+        <div id="mode-badge" class="px-3 py-1 rounded-xl font-black text-xs sm:text-sm bg-indigo-100 text-indigo-700">
+          れんしゅう
+        </div>
+
+        <div class="flex items-center gap-3 sm:gap-6">
+          <div id="timer-box" class="flex items-center gap-
